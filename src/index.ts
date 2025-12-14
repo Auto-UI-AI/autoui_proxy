@@ -22,3 +22,4 @@ await ensureIndexes();
 
 console.log(`🚀 AutoUI Proxy running on port http://localhost:${port}`);
 serve({ fetch: app.fetch, port });
+
