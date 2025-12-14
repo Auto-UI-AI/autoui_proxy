@@ -20,6 +20,5 @@ const port = Number(process.env.PORT ?? 8787);
 
 await ensureIndexes();
 
-console.log(`🚀 AutoUI Proxy running on port http://localhost:${port}`);
+console.log(`running on port http://localhost:${port}`);
 serve({ fetch: app.fetch, port });
-
