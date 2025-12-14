@@ -126,8 +126,6 @@ app.get("/health", (c) => {
 
 const port = Number(process.env.PORT ?? 8787);
 
-console.log(`🚀 AutoUI Proxy running at http://localhost:${port}`);
-
 serve({
     fetch: app.fetch,
     port,
