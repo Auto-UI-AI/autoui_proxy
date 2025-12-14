@@ -10,7 +10,13 @@ export async function getDb(): Promise<Db> {
     const uri = getEnv("MONGODB_URI");
     const dbName = getEnv("MONGODB_DB");
 
-    client = new MongoClient(uri);
+    client = new MongoClient(uri, {
+        tls: true,
+        retryWrites: true,
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+    });
+
     await client.connect();
     db = client.db(dbName);
 
