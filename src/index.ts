@@ -5,7 +5,8 @@ import { serve } from "@hono/node-server";
 import { APP_POLICIES, parseOrigins } from "./config";
 import { rateLimit } from "./rageLimit";
 import { getClientIp, verifySharedSecret } from "./security";
-import { callOpenRouterStream, type ChatRequest } from "./openaiCompat";
+import { callOpenRouterStream } from "./openaiCompat";
+import type { ChatRequest } from "./openaiCompat";
 
 const app = new Hono();
 
@@ -97,14 +98,7 @@ app.post("/v1/chat", async (c) => {
         c.header("Cache-Control", "no-cache");
         c.header("Connection", "keep-alive");
 
-        return new Response(llmResponse.body, {
-            status: 200,
-            headers: {
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
-                Connection: "keep-alive",
-            },
-        });
+       return c.newResponse(llmResponse.body, 200);
     } catch (err: any) {
         console.error("Proxy error:", err);
         return c.json({ error: err?.message ?? "Internal proxy error" }, 500);
