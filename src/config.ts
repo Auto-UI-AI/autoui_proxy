@@ -28,6 +28,13 @@ export const APP_POLICIES: Record<string, AppPolicy> = {
         allowTools: true,
         rateLimitPerMin: 60,
     },
+    "AutoUI Task Manager": {
+        model: "openai/gpt-4o-mini",
+        maxTokens: 2048,
+        temperature: 0.2,
+        allowTools: true,
+        rateLimitPerMin: 60,
+    },
 };
 
 export function getEnv(name: string): string {
