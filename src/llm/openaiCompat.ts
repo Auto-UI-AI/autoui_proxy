@@ -1,4 +1,4 @@
-import { getEnv } from "./config.js";
+import { getEnv } from "../config.js";
 
 type ChatMessage = { role: "system" | "user" | "assistant" | "tool"; content: string };
 
