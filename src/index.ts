@@ -9,45 +9,39 @@ import { callOpenRouterStream, type ChatRequest } from "./openaiCompat.js";
 
 const app = new Hono();
 
-function setCors(c: any) {
-    const origins = parseOrigins();
-    const origin = c.req.header("origin");
+function corsHeaders(origin?: string): Headers {
+    const headers = new Headers();
+    const allowed = parseOrigins();
 
-    if (!origin) return;
-
-    if (origins.includes("*") || origins.includes(origin)) {
-        c.header("Access-Control-Allow-Origin", origin);
-        c.header("Vary", "Origin");
-        c.header("Access-Control-Allow-Headers", "content-type, x-autoui-secret");
-        c.header("Access-Control-Allow-Methods", "POST, OPTIONS");
+    if (origin && (allowed.includes("*") || allowed.includes(origin))) {
+        headers.set("Access-Control-Allow-Origin", origin);
+        headers.set("Vary", "Origin");
     }
-}
 
-function corsHeaders(origin?: string) {
-    return {
-        "Access-Control-Allow-Origin": origin ?? "*",
-        "Access-Control-Allow-Headers": "content-type, x-autoui-secret",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Credentials": "true",
-        Vary: "Origin",
-    };
+    headers.set("Access-Control-Allow-Headers", "content-type, x-autoui-secret");
+    headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    headers.set("Cache-Control", "no-cache");
+
+    return headers;
 }
 
 app.options("/v1/chat", (c) => {
-    setCors(c);
-    return c.body(null, 204);
+    const origin = c.req.header("origin");
+    return new Response(null, {
+        status: 204,
+        headers: corsHeaders(origin),
+    });
 });
 
 app.post("/v1/chat", async (c) => {
     const origin = c.req.header("origin");
 
     if (!verifySharedSecret(c.req.raw)) {
+        const h = corsHeaders(origin);
+        h.set("Content-Type", "application/json");
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
-            headers: {
-                ...corsHeaders(origin),
-                "Content-Type": "application/json",
-            },
+            headers: h,
         });
     }
 
@@ -55,36 +49,33 @@ app.post("/v1/chat", async (c) => {
     try {
         body = await c.req.json();
     } catch {
+        const h = corsHeaders(origin);
+        h.set("Content-Type", "application/json");
         return new Response(JSON.stringify({ error: "Invalid JSON" }), {
             status: 400,
-            headers: {
-                ...corsHeaders(origin),
-                "Content-Type": "application/json",
-            },
+            headers: h,
         });
     }
 
     const policy = APP_POLICIES[body.appId];
     if (!policy) {
+        const h = corsHeaders(origin);
+        h.set("Content-Type", "application/json");
         return new Response(JSON.stringify({ error: "Unknown appId" }), {
             status: 403,
-            headers: {
-                ...corsHeaders(origin),
-                "Content-Type": "application/json",
-            },
+            headers: h,
         });
     }
 
     const ip = getClientIp(c.req.raw);
     const rl = rateLimit(`${body.appId}:${ip}`, policy.rateLimitPerMin);
     if (!rl.ok) {
+        const h = corsHeaders(origin);
+        h.set("Content-Type", "application/json");
+        h.set("Retry-After", String(rl.retryAfterSec));
         return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
             status: 429,
-            headers: {
-                ...corsHeaders(origin),
-                "Content-Type": "application/json",
-                "Retry-After": String(rl.retryAfterSec),
-            },
+            headers: h,
         });
     }
 
@@ -109,19 +100,20 @@ app.post("/v1/chat", async (c) => {
         tools: policy.allowTools ? body.tools ?? [] : [],
     });
 
+    const h = corsHeaders(origin);
+    h.set("Content-Type", "text/event-stream");
+    h.set("Connection", "keep-alive");
+
     return new Response(llmResponse.body, {
         status: 200,
-        headers: {
-            ...corsHeaders(origin),
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-        },
+        headers: h,
     });
 });
 
-app.get("/health", (c) => {
-    return c.json({ ok: true });
+app.get("/health", () => {
+    return new Response(JSON.stringify({ ok: true }), {
+        headers: { "Content-Type": "application/json" },
+    });
 });
 
 const port = Number(process.env.PORT ?? 8787);
