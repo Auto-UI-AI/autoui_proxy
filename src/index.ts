@@ -2,10 +2,10 @@ import "dotenv/config";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 
-import { APP_POLICIES, parseOrigins } from "./config";
-import { rateLimit } from "./rageLimit";
-import { getClientIp, verifySharedSecret } from "./security";
-import { callOpenRouterStream, type ChatRequest } from "./openaiCompat";
+import { APP_POLICIES, parseOrigins } from "./config.js";
+import { rateLimit } from "./rageLimit.js";
+import { getClientIp, verifySharedSecret } from "./security.js";
+import { callOpenRouterStream, type ChatRequest } from "./openaiCompat.js";
 
 const app = new Hono();
 

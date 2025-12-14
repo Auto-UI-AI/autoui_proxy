@@ -40,6 +40,6 @@ export function parseOrigins(): string[] {
     const raw = process.env.CORS_ORIGINS ?? "";
     return raw
         .split(",")
-        .map((s) => s.trim())
+        .map((s: string) => s.trim())
         .filter(Boolean);
 }
