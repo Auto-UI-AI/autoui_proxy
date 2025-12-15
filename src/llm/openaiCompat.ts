@@ -15,6 +15,7 @@ export type ChatRequest = {
     appDescriptionPrompt?: string;
     tools?: ToolSchema[];
     temperature?: number;
+    intent?: string;
 };
 
 export async function callOpenRouterStream(args: {
