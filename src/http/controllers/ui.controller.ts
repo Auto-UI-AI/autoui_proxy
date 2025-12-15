@@ -16,16 +16,14 @@ export class UiController {
     }
     async createAppWithYourApiKey(body: { appId: string; name: string; apiKey: string; policy?: any }) {
         const created = await this.apps.createAppWithYourApiKey(body);
-        return { appId: created.appId, name: created.name};
+        const createdToken = await this.tokens.issueToken({appId: body.appId });
+        return { appId: created.appId, name: created.name, token: createdToken.token };
     }
     async listTokens(appId: string) {
         return { items: await this.tokens.listTokens(appId) };
     }
 
     async createToken(body: { appId: string; apiKey?:string; label?: string }) {
-        return await this.tokens.issueToken(body);
-    }   
-      async createTokenWithApiKey(body: { appId: string; apiKey?:string; label?: string }) {
         return await this.tokens.issueToken(body);
     }
 

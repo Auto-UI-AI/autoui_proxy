@@ -60,16 +60,6 @@ uiRoutes.post("/ui/tokens", async (c) => {
     const res = await ctrl.createToken(body);
     return new Response(JSON.stringify(res), { status: 201, headers: h });
 });
-uiRoutes.post("/ui/apikeytokens", async (c) => {
-    const origin = c.req.header("origin");
-    const h = corsHeaders(origin);
-    h.set("Content-Type", "application/json");
-
-    const body = await c.req.json();
-    console.log("body received at /ui/apikeytokens:", body);
-    const res = await ctrl.createTokenWithApiKey(body);
-    return new Response(JSON.stringify(res), { status: 201, headers: h });
-});
 
 uiRoutes.delete("/ui/tokens/:id", async (c) => {
     const origin = c.req.header("origin");
