@@ -3,6 +3,7 @@ import { getClientIp } from "../../security/ip.js";
 import { rateLimit } from "../middlewares/rateLimit.js";
 import { callOpenRouterStream, type ChatRequest } from "../../llm/openaiCompat.js";
 import { TokenRepo } from "../../domain/token/token.repo.js";
+import { AppService } from "../../domain/app/app.service.js";
 
 export class ChatController {
     private policies = new PolicyService();
@@ -24,7 +25,8 @@ export class ChatController {
             };
 
         if (tokenEntity?._id) await this.tokenRepo.touchLastUsed(tokenEntity._id);
-
+        let decryptedApiKey =  await new AppService().decryptApiKey(body.appId);
+        if(!decryptedApiKey) return { status: 404, json: { error: "Error with decrypted key, it has not been found ot not acceptable" } };
         const messages = [
             {
                 role: "system" as const,
@@ -39,6 +41,7 @@ export class ChatController {
         ];
 
         const llmResponse = await callOpenRouterStream({
+            decryptedApiKey: decryptedApiKey,
             model: policy.model,
             maxTokens: policy.maxTokens,
             temperature: body.temperature ?? policy.temperature,

@@ -1,6 +1,6 @@
 import { AppRepo } from "./app.repo.js";
 import type { AppEntity } from "./app.model.js";
-import { encryptApiKey } from "../../security/crypto.js";
+import { decryptApiKey, encryptApiKey } from "../../security/crypto.js";
 
 export class AppService {
     constructor(private repo = new AppRepo()) {}
@@ -36,4 +36,16 @@ export class AppService {
     async listApps() {
         return this.repo.list();
     }
+    async decryptApiKey(appId: string) {
+            // const tokenHash = decryptApiKey(encryptedApiKey);
+            let foundApp = await this.getApp(appId);
+            // console.log("foundApp:", foundApp); 
+
+            if(foundApp && foundApp.apiKey) {
+                let decryptedApiKey = decryptApiKey(foundApp.apiKey);
+                // console.log("decryptedApiKey:", decryptedApiKey);
+                return decryptedApiKey;
+            }
+
+        }
 }

@@ -23,8 +23,8 @@ export const APP_POLICIES: Record<string, AppPolicy> = {
         rateLimitPerMin: 120,
     },
     "tasks-demo": {
-        model: "openai/gpt-4.1-mini",
-        maxTokens: 1024,
+        model: "openai/gpt-5-chat",
+        maxTokens: 2048,
         temperature: 0.2,
         allowTools: true,
         rateLimitPerMin: 120,
