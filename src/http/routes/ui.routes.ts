@@ -26,7 +26,15 @@ uiRoutes.post("/ui/apps", async (c) => {
     const res = await ctrl.createApp(body);
     return new Response(JSON.stringify(res), { status: 201, headers: h });
 });
+uiRoutes.post("/ui/appsWithApiKey", async (c) => {
+    const origin = c.req.header("origin");
+    const h = corsHeaders(origin);
+    h.set("Content-Type", "application/json");
 
+    const body = await c.req.json();
+    const res = await ctrl.createAppWithYourApiKey(body);
+    return new Response(JSON.stringify(res), { status: 201, headers: h });
+});
 uiRoutes.get("/ui/tokens", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
@@ -50,6 +58,16 @@ uiRoutes.post("/ui/tokens", async (c) => {
 
     const body = await c.req.json();
     const res = await ctrl.createToken(body);
+    return new Response(JSON.stringify(res), { status: 201, headers: h });
+});
+uiRoutes.post("/ui/apikeytokens", async (c) => {
+    const origin = c.req.header("origin");
+    const h = corsHeaders(origin);
+    h.set("Content-Type", "application/json");
+
+    const body = await c.req.json();
+    console.log("body received at /ui/apikeytokens:", body);
+    const res = await ctrl.createTokenWithApiKey(body);
     return new Response(JSON.stringify(res), { status: 201, headers: h });
 });
 

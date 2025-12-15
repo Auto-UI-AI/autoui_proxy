@@ -6,7 +6,7 @@ let db: Db | null = null;
 
 export async function getDb(): Promise<Db> {
     if (db) return db;
-
+    
     const uri = getEnv("MONGODB_URI");
     const dbName = getEnv("MONGODB_DB");
 

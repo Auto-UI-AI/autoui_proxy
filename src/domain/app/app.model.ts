@@ -8,6 +8,7 @@ export type AppPolicyOverride = {
 
 export type AppEntity = {
     _id?: any;
+    apiKey?: string;
     appId: string;
     name: string;
     policy?: AppPolicyOverride;

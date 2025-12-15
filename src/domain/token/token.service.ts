@@ -5,7 +5,7 @@ import type { TokenEntity } from "./token.model.js";
 export class TokenService {
     constructor(private repo = new TokenRepo()) {}
 
-    async issueToken(args: { appId: string; label?: string }) {
+    async issueToken(args: { appId: string; apiKey?:string; label?: string }) {
         const token = generateToken();
         const tokenHash = hashToken(token);
 
