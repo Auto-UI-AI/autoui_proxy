@@ -1,10 +1,11 @@
 import { AppService } from "../../domain/app/app.service.js";
 import { TokenService } from "../../domain/token/token.service.js";
+import { UserService } from "../../domain/user/user.service.js";
 
 export class UiController {
     private apps = new AppService();
     private tokens = new TokenService();
-    
+    private user = new UserService();
     async listApps() {
         const items = await this.apps.listApps();
         return items.map((a) => ({ appId: a.appId, name: a.name, policy: a.policy }));
@@ -30,5 +31,11 @@ export class UiController {
     async revokeToken(tokenId: string) {
         await this.tokens.revokeToken(tokenId);
         return { ok: true };
+    }
+    async signUpUser(body: { email: string; password: string }) {
+        return await this.user.signUp(body);
+    }
+    async logInUser(body: { email: string; password: string }) {
+        return await this.user.logIn(body);
     }
 }

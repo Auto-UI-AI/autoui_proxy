@@ -70,3 +70,22 @@ uiRoutes.delete("/ui/tokens/:id", async (c) => {
     await ctrl.revokeToken(id);
     return new Response(null, { status: 204, headers: h });
 });
+
+uiRoutes.post("/ui/signup", async (c) => {
+    const origin = c.req.header("origin");
+    const h = corsHeaders(origin);
+    h.set("Content-Type", "application/json");
+
+    const body = await c.req.json();
+    const res = await ctrl.signUpUser(body);
+    return new Response(JSON.stringify(res), { status: 201, headers: h });
+});
+uiRoutes.post("/ui/login", async (c) => {
+    const origin = c.req.header("origin");
+    const h = corsHeaders(origin);
+    h.set("Content-Type", "application/json");
+
+    const body = await c.req.json();
+    const res = await ctrl.logInUser(body);
+    return new Response(JSON.stringify(res), { status: 201, headers: h });
+});

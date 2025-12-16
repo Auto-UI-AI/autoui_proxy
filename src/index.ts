@@ -9,7 +9,6 @@ const app = new Hono();
 
 app.route("/", uiRoutes);
 app.route("/", chatRoutes);
-
 app.get("/health", () => {
     return new Response(JSON.stringify({ ok: true }), {
         headers: { "Content-Type": "application/json" },
