@@ -5,19 +5,19 @@ import { UiController } from "../controllers/ui.controller.js";
 export const uiRoutes = new Hono();
 const ctrl = new UiController();
 
-uiRoutes.options("*", (c) => {
-    const origin = c.req.header("origin");
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
-});
+// uiRoutes.options("*", (c) => {
+//     const origin = c.req.header("origin");
+//     return new Response(null, { status: 204, headers: corsHeaders(origin) });
+// });
 
-uiRoutes.get("/ui/apps", async (c) => {
+uiRoutes.get("/apps", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
     h.set("Content-Type", "application/json");
     return new Response(JSON.stringify({ items: await ctrl.listApps() }), { headers: h });
 });
 
-uiRoutes.post("/ui/apps", async (c) => {
+uiRoutes.post("/apps", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
     h.set("Content-Type", "application/json");
@@ -27,7 +27,7 @@ uiRoutes.post("/ui/apps", async (c) => {
     return new Response(JSON.stringify(res), { status: 201, headers: h });
 });
 
-uiRoutes.get("/ui/tokens", async (c) => {
+uiRoutes.get("/tokens", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
     h.set("Content-Type", "application/json");
@@ -43,7 +43,7 @@ uiRoutes.get("/ui/tokens", async (c) => {
     return new Response(JSON.stringify(res), { headers: h });
 });
 
-uiRoutes.post("/ui/tokens", async (c) => {
+uiRoutes.post("/tokens", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
     h.set("Content-Type", "application/json");
@@ -53,7 +53,7 @@ uiRoutes.post("/ui/tokens", async (c) => {
     return new Response(JSON.stringify(res), { status: 201, headers: h });
 });
 
-uiRoutes.delete("/ui/tokens/:id", async (c) => {
+uiRoutes.delete("/tokens/:id", async (c) => {
     const origin = c.req.header("origin");
     const h = corsHeaders(origin);
     h.set("Content-Type", "application/json");

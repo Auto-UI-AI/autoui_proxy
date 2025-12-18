@@ -8,22 +8,28 @@ export class ChatController {
     private policies = new PolicyService();
     private tokenRepo = new TokenRepo();
 
-    async handleChat(req: Request, body: ChatRequest, tokenEntity: any) {
-        const policy = await this.policies.resolve(body.appId);
-        if (!policy) return { status: 403, json: { error: "Unknown appId" } };
+    async handleChat(req: Request, appId: string, body: ChatRequest, tokenEntity: any) {
+        const policy = await this.policies.resolve(appId);
+        if (!policy) {
+            return { status: 403, json: { error: "Unknown appId" } };
+        }
 
         const ip = getClientIp(req);
-        const rlKey = tokenEntity?._id ? `token:${String(tokenEntity._id)}` : `${body.appId}:${ip}`;
+        const rlKey = tokenEntity?._id ? `token:${String(tokenEntity._id)}` : `${appId}:${ip}`;
+
         const rl = rateLimit(rlKey, policy.rateLimitPerMin);
 
-        if (!rl.ok)
+        if (!rl.ok) {
             return {
                 status: 429,
                 json: { error: "Rate limit exceeded" },
                 retryAfter: rl.retryAfterSec,
             };
+        }
 
-        if (tokenEntity?._id) await this.tokenRepo.touchLastUsed(tokenEntity._id);
+        if (tokenEntity?._id) {
+            await this.tokenRepo.touchLastUsed(tokenEntity._id);
+        }
 
         const messages = [
             {
