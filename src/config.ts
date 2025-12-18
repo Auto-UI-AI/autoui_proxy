@@ -22,6 +22,13 @@ export const APP_POLICIES: Record<string, AppPolicy> = {
         allowTools: true,
         rateLimitPerMin: 120,
     },
+    "financial-demo": {
+        model: "openai/gpt-4.1-mini",
+        maxTokens: 1024,
+        temperature: 0.2,
+        allowTools: true,
+        rateLimitPerMin: 120,
+    },
     "tasks-demo": {
         model: "openai/gpt-4.1-mini",
         maxTokens: 1024,
