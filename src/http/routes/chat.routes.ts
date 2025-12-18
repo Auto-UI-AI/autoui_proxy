@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { corsHeaders } from "../middlewares/cors.js";
 import { authAppAccess } from "../middlewares/auth.js";
 import { ChatController } from "../controllers/chat.controller.js";
 import type { ChatRequest } from "../../llm/openaiCompat.js";
@@ -7,41 +6,32 @@ import type { ChatRequest } from "../../llm/openaiCompat.js";
 export const chatRoutes = new Hono();
 const ctrl = new ChatController();
 
-chatRoutes.options("/v1/chat", (c) => {
-    const origin = c.req.header("origin");
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
-});
-
-chatRoutes.post("/v1/chat", async (c) => {
-    const origin = c.req.header("origin");
-
+chatRoutes.post("/create", async (c) => {
     let body: ChatRequest;
     try {
         body = await c.req.json();
     } catch {
-        const h = corsHeaders(origin);
-        h.set("Content-Type", "application/json");
-        return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: h });
+        return c.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
-    const auth = await authAppAccess(c.req.raw, body.appId);
+    const appId = c.req.header("X-AUTOUI-APP-ID");
+    if (!appId) {
+        return c.json({ error: "Missing app id" }, { status: 400 });
+    }
+
+    const auth = await authAppAccess(c.req.raw, appId);
     if (!auth.ok) {
-        const h = corsHeaders(origin);
-        h.set("Content-Type", "application/json");
-        return new Response(JSON.stringify({ error: auth.reason }), { status: 401, headers: h });
+        return c.json({ error: auth.reason }, { status: 401 });
     }
 
-    const result = await ctrl.handleChat(c.req.raw, body, auth.tokenEntity);
-
-    const h = corsHeaders(origin);
-    if (result.retryAfter) h.set("Retry-After", String(result.retryAfter));
+    const result = await ctrl.handleChat(c.req.raw, appId, body, auth.tokenEntity);
 
     if (result.stream) {
-        h.set("Content-Type", "text/event-stream");
-        h.set("Connection", "keep-alive");
-        return new Response(result.stream, { status: 200, headers: h });
+        c.header("Content-Type", "text/event-stream");
+        c.header("Cache-Control", "no-cache");
+        c.header("Connection", "keep-alive");
+        return c.body(result.stream);
     }
 
-    h.set("Content-Type", "application/json");
-    return new Response(JSON.stringify(result.json), { status: result.status, headers: h });
+    return c.json(result.json, { status: result.status } as any);
 });

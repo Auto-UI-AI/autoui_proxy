@@ -7,9 +7,7 @@ type ToolSchema = {
     description?: string;
     parameters: any;
 };
-
 export type ChatRequest = {
-    appId: string;
     sessionId?: string;
     messages: ChatMessage[];
     appDescriptionPrompt?: string;
