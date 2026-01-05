@@ -26,8 +26,8 @@ export async function callOpenRouterStream(args: {
     decryptedApiKey?: string;
     tools?: ToolSchema[];
 }) {
-    const baseUrl = process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-    const apiKey = args.decryptedApiKey ?? getEnv("OPENROUTER_API_KEY");
+    const baseUrl = process.env.OPENROUTER_BASE_URL;
+    const apiKey = args.decryptedApiKey;
 
     const body: any = {
         model: args.model,
@@ -47,8 +47,13 @@ export async function callOpenRouterStream(args: {
             },
         }));
     }
-
-    const res = await fetch(`${baseUrl}/chat/completions`, {
+console.log("🔥 OpenRouter CALL", {
+  baseUrl,
+  model: args.model,
+  maxTokens: args.maxTokens,
+  temperature: args.temperature,
+});
+    const res = await fetch(`${baseUrl}`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -58,10 +63,11 @@ export async function callOpenRouterStream(args: {
         },
         body: JSON.stringify(body),
     });
+    
 
     if (!res.ok || !res.body) {
         const text = await res.text().catch(() => "");
-        throw new Error(`LLM error ${res.status}: ${text}`);
+        throw new Error(`LLM error ${JSON.stringify(res)} ${res.status}: ${text}`);
     }
 
     return res;

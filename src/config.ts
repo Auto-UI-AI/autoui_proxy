@@ -8,22 +8,8 @@ export type AppPolicy = {
 };
 
 export const APP_POLICIES: Record<string, AppPolicy> = {
-    "ecommerce-demo": {
-        model: "openai/gpt-4o-mini",
-        maxTokens: 2048,
-        temperature: 0.2,
-        allowTools: true,
-        rateLimitPerMin: 60,
-    },
-    "prod-app": {
-        model: "openai/gpt-4.1-mini",
-        maxTokens: 1024,
-        temperature: 0.2,
-        allowTools: true,
-        rateLimitPerMin: 120,
-    },
-    "tasks-demo": {
-        model: "openai/gpt-5-chat",
+    "tasks-demo4": {
+        model: "openai/chatgpt-4o-latest",
         maxTokens: 2048,
         temperature: 0.2,
         allowTools: true,

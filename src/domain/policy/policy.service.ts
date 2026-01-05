@@ -19,7 +19,7 @@ export class PolicyService {
         if (!base && !app) return null;
 
         const merged: ResolvedPolicy = {
-            model: base?.model ?? app?.policy?.model ?? "openai/gpt-4.1-mini",
+            model: base?.model ?? app?.policy?.model ?? "openai/chatgpt-4o-latest",
             maxTokens: base?.maxTokens ?? app?.policy?.maxTokens ?? 1024,
             temperature: base?.temperature ?? app?.policy?.temperature ?? 0.2,
             allowTools: base?.allowTools ?? app?.policy?.allowTools ?? true,
