@@ -1,9 +1,14 @@
 import "dotenv/config";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { ensureIndexes } from "./db/indexes.js";
 import { chatRoutes } from "./http/routes/chat.routes.js";
 import { uiRoutes } from "./http/routes/ui.routes.js";
+
+import { APP_POLICIES, parseOrigins } from "./config";
+import { rateLimit } from "./rageLimit";
+import { getClientIp, verifySharedSecret } from "./security";
+import { callOpenRouterStream } from "./openaiCompat";
+import type { ChatRequest } from "./openaiCompat";
 
 const app = new Hono();
 

@@ -13,7 +13,28 @@ export const APP_POLICIES: Record<string, AppPolicy> = {
         maxTokens: 2048,
         temperature: 0.2,
         allowTools: true,
+        rateLimitPerMin: 60,    
+    },
+    "prod-app": {
+        model: "openai/gpt-4.1-mini",
+        maxTokens: 1024,
+        temperature: 0.2,
+        allowTools: true,
         rateLimitPerMin: 120,
+    },
+    "autoui_demo": {
+        model: "openai/gpt-4o-mini",
+        maxTokens: 2048,
+        temperature: 0.2,
+        allowTools: true,
+        rateLimitPerMin: 60,
+    },
+    "AutoUI Task Manager": {
+        model: "openai/gpt-4o-mini",
+        maxTokens: 2048,
+        temperature: 0.2,
+        allowTools: true,
+        rateLimitPerMin: 60,
     },
 };
 
