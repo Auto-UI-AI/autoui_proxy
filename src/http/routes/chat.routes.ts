@@ -89,18 +89,19 @@ chatRoutes.post("/v1/chat/extraAnalysis", async (c) => {
         return new Response(JSON.stringify({ error: auth.reason }), { status: 401, headers: h });
     }
 
-    const result = await ctrl.handleChat(c.req.raw, body={...body, intent: 'extraAnalysis'}, auth.tokenEntity);
+    const result = await ctrl.handleExtraAnalysisNonStream(c.req.raw, body={...body}, auth.tokenEntity);
 
     const h = corsHeaders(origin);
     if (result.retryAfter) h.set("Retry-After", String(result.retryAfter));
 
-    if (result.stream) {
-        h.set("Content-Type", "text/event-stream");
-        h.set("Connection", "keep-alive");
-        return new Response(result.stream, { status: 200, headers: h });
+    if (!result) {
+        return new Response(JSON.stringify({ error: "Internal server error" }),{ status: 500, headers: h });
     }
 
     h.set("Content-Type", "application/json");
-    console.log('result from /v1/chat/extraAnalysis:', JSON.stringify(result.json));
-    return new Response(JSON.stringify(result.json), { status: result.status, headers: h });
+    console.log('result from /v1/chat/extraAnalysis:', JSON.stringify(result));
+    return new Response(JSON.stringify(result.llmResponse.choices[0].message.content), {
+      status: result.status,
+      headers: h,
+    });
 });

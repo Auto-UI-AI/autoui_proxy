@@ -15,7 +15,6 @@ export type ChatRequest = {
     appDescriptionPrompt?: string;
     tools?: ToolSchema[];
     temperature?: number;
-    intent?: string;
 };
 
 export async function callOpenRouterStream(args: {
@@ -71,4 +70,42 @@ console.log("🔥 OpenRouter CALL", {
     }
 
     return res;
+}
+export async function callOpenRouterJSON(args: {
+  model: string;
+  maxTokens: number;
+  temperature: number;
+  messages: ChatMessage[];
+  decryptedApiKey?: string;
+  tools?: ToolSchema[];
+}) {
+  const baseUrl = process.env.OPENROUTER_BASE_URL;
+  const apiKey = args.decryptedApiKey;
+
+  const body = {
+    model: args.model,
+    messages: args.messages,
+    temperature: args.temperature,
+    max_tokens: args.maxTokens,
+    stream: false,
+  };
+
+  const res = await fetch(baseUrl!, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://autoui.dev",
+      "X-Title": "AutoUI Proxy",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`LLM error ${res.status}: ${text}`);
+  }
+
+  const json = await res.json();
+  return json;
 }
