@@ -1,5 +1,4 @@
 type Bucket = { count: number; resetAt: number };
-
 const buckets = new Map<string, Bucket>();
 
 export function rateLimit(

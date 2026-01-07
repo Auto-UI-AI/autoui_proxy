@@ -1,4 +1,4 @@
-import { getEnv } from "./config.js";
+import { getEnv } from "../config.js";
 
 type ChatMessage = { role: "system" | "user" | "assistant" | "tool"; content: string };
 
@@ -22,10 +22,11 @@ export async function callOpenRouterStream(args: {
     maxTokens: number;
     temperature: number;
     messages: ChatMessage[];
+    decryptedApiKey?: string;
     tools?: ToolSchema[];
 }) {
-    const baseUrl = process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-    const apiKey = getEnv("OPENROUTER_API_KEY");
+    const baseUrl = process.env.OPENROUTER_BASE_URL;
+    const apiKey = args.decryptedApiKey;
 
     const body: any = {
         model: args.model,
@@ -45,8 +46,13 @@ export async function callOpenRouterStream(args: {
             },
         }));
     }
-
-    const res = await fetch(`${baseUrl}/chat/completions`, {
+console.log("🔥 OpenRouter CALL", {
+  baseUrl,
+  model: args.model,
+  maxTokens: args.maxTokens,
+  temperature: args.temperature,
+});
+    const res = await fetch(`${baseUrl}`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -56,11 +62,50 @@ export async function callOpenRouterStream(args: {
         },
         body: JSON.stringify(body),
     });
+    
 
     if (!res.ok || !res.body) {
         const text = await res.text().catch(() => "");
-        throw new Error(`LLM error ${res.status}: ${text}`);
+        throw new Error(`LLM error ${JSON.stringify(res)} ${res.status}: ${text}`);
     }
 
     return res;
+}
+export async function callOpenRouterJSON(args: {
+  model: string;
+  maxTokens: number;
+  temperature: number;
+  messages: ChatMessage[];
+  decryptedApiKey?: string;
+  tools?: ToolSchema[];
+}) {
+  const baseUrl = process.env.OPENROUTER_BASE_URL;
+  const apiKey = args.decryptedApiKey;
+
+  const body = {
+    model: args.model,
+    messages: args.messages,
+    temperature: args.temperature,
+    max_tokens: args.maxTokens,
+    stream: false,
+  };
+
+  const res = await fetch(baseUrl!, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://autoui.dev",
+      "X-Title": "AutoUI Proxy",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`LLM error ${res.status}: ${text}`);
+  }
+
+  const json = await res.json();
+  return json;
 }

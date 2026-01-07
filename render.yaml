@@ -1,0 +1,24 @@
+services:
+    - type: web
+      name: autoui-proxy
+      env: docker
+      plan: free
+      autoDeploy: true
+
+      dockerfilePath: ./Dockerfile
+
+      envVars:
+          - key: NODE_ENV
+            value: production
+
+          - key: PORT
+            value: 8787
+
+          - key: OPENROUTER_API_KEY
+            sync: false
+
+          - key: AUTOUI_PROXY_SHARED_SECRET
+            sync: false
+
+          - key: CORS_ORIGINS
+            value: "*"

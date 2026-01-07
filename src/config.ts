@@ -1,3 +1,4 @@
+import "dotenv/config";
 export type AppPolicy = {
     model: string;
     maxTokens: number;
@@ -7,29 +8,8 @@ export type AppPolicy = {
 };
 
 export const APP_POLICIES: Record<string, AppPolicy> = {
-    "ecommerce-demo": {
-        model: "openai/gpt-4o-mini",
-        maxTokens: 2048,
-        temperature: 0.2,
-        allowTools: true,
-        rateLimitPerMin: 60,    
-    },
-    "prod-app": {
-        model: "openai/gpt-4.1-mini",
-        maxTokens: 1024,
-        temperature: 0.2,
-        allowTools: true,
-        rateLimitPerMin: 120,
-    },
-    "autoui_demo": {
-        model: "openai/gpt-4o-mini",
-        maxTokens: 2048,
-        temperature: 0.2,
-        allowTools: true,
-        rateLimitPerMin: 60,
-    },
-    "AutoUI Task Manager": {
-        model: "openai/gpt-4o-mini",
+    "tasks-demo4": {
+        model: "openai/chatgpt-4o-latest",
         maxTokens: 2048,
         temperature: 0.2,
         allowTools: true,
@@ -47,6 +27,6 @@ export function parseOrigins(): string[] {
     const raw = process.env.CORS_ORIGINS ?? "";
     return raw
         .split(",")
-        .map((s) => s.trim())
+        .map((s: string) => s.trim())
         .filter(Boolean);
 }
