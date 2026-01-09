@@ -1,24 +1,29 @@
-import { TokenService } from "../../domain/token/token.service.js";
-import { verifySharedSecret } from "../../security/sharedSecret.js";
+import type { Request } from "@hono/node-server/dist/request.js";
 
 export async function authAppAccess(req: Request, bodyAppId?: string) {
-    const auth = req.headers.get("authorization");
-    if (auth?.startsWith("Bearer ")) {
-        const token = auth.slice("Bearer ".length).trim();
-        const tokenSvc = new TokenService();
-        const tokenEntity = await tokenSvc.verifyToken(token);
-
-        if (!tokenEntity) return { ok: false as const, reason: "Unauthorized" };
-
-        if (bodyAppId && tokenEntity.appId !== bodyAppId) {
-            return { ok: false as const, reason: "Token appId mismatch" };
-        }
-
-        return { ok: true as const, tokenEntity };
-    }
-    if (verifySharedSecret(req)) {
+    const secret = process.env.AUTOUI_PROXY_SHARED_SECRET;
+    if (!secret) {
+        console.warn("AUTOUI_PROXY_SHARED_SECRET is not set, skipping secret check!");
         return { ok: true as const, tokenEntity: null };
     }
 
-    return { ok: false as const, reason: "Unauthorized" };
+    const gotSecret = req.headers.get("x-autoui-secret");
+    const gotAppId = req.headers.get("x-autoui-app-id");
+
+    if (!gotSecret || !gotAppId) {
+        console.log("Missing headers", gotSecret, gotAppId);
+        return { ok: false as const, reason: "Unauthorized" };
+    }
+
+    if (bodyAppId && bodyAppId !== gotAppId) {
+        console.log("AppId mismatch", bodyAppId, gotAppId);
+        return { ok: false as const, reason: "AppId mismatch" };
+    }
+
+    if (gotSecret !== secret) {
+        console.log("Secret mismatch", gotSecret, secret);
+        return { ok: false as const, reason: "Unauthorized" };
+    }
+
+    return { ok: true as const, tokenEntity: null };
 }

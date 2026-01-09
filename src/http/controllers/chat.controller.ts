@@ -1,7 +1,11 @@
 import { PolicyService } from "../../domain/policy/policy.service.js";
 import { getClientIp } from "../../security/ip.js";
 import { rateLimit } from "../middlewares/rateLimit.js";
-import { callOpenRouterStream, type ChatRequest } from "../../llm/openaiCompat.js";
+import {
+    callOpenRouterStream,
+    callOpenRouterJson,
+    type ChatRequest,
+} from "../../llm/openaiCompat.js";
 import { TokenRepo } from "../../domain/token/token.repo.js";
 
 export class ChatController {
@@ -49,9 +53,82 @@ export class ChatController {
             maxTokens: policy.maxTokens,
             temperature: body.temperature ?? policy.temperature,
             messages,
-            tools: policy.allowTools ? body.tools ?? [] : [],
+            tools: [],
+            apiKey: policy.openRouterApiKey,
         });
 
+
         return { status: 200, stream: llmResponse.body };
+    }
+
+    async handleExtraAnalysis(
+        req: Request,
+        appId: string,
+        body: { messages: ChatRequest["messages"]; temperature?: number },
+        tokenEntity: any
+    ) {
+        const policy = await this.policies.resolve(appId);
+        if (!policy) {
+            return { status: 403, json: { error: "Unknown appId" } };
+        }
+
+        const ip = getClientIp(req);
+        const rlKey = tokenEntity?._id ? `token:${String(tokenEntity._id)}` : `${appId}:${ip}`;
+
+        const rl = rateLimit(rlKey, policy.rateLimitPerMin);
+
+        if (!rl.ok) {
+            return {
+                status: 429,
+                json: { error: "Rate limit exceeded" },
+                retryAfter: rl.retryAfterSec,
+            };
+        }
+
+        if (tokenEntity?._id) {
+            await this.tokenRepo.touchLastUsed(tokenEntity._id);
+        }
+
+        const temperature = body.temperature ?? policy.temperature;
+
+        try {
+            const llmResponse = await callOpenRouterJson({
+                model: policy.model,
+                maxTokens: policy.maxTokens,
+                temperature,
+                messages: body.messages,
+                tools: [], // No tools for extra analysis
+                apiKey: policy.openRouterApiKey,
+            });
+
+            // Extract the content from the response
+            const content = llmResponse.choices?.[0]?.message?.content;
+
+            if (!content) {
+                return {
+                    status: 500,
+                    json: { error: "No content in LLM response" },
+                };
+            }
+
+            // Try to parse as JSON if possible, otherwise return as string
+            let parsedContent;
+            try {
+                parsedContent = JSON.parse(content);
+            } catch {
+                parsedContent = content;
+            }
+
+            return {
+                status: 200,
+                json: parsedContent,
+            };
+        } catch (error: any) {
+            console.error("Extra analysis error:", error);
+            return {
+                status: 500,
+                json: { error: error.message || "Failed to process extra analysis" },
+            };
+        }
     }
 }

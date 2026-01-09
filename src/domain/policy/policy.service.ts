@@ -1,5 +1,6 @@
 import { APP_POLICIES } from "../../config.js";
 import { AppRepo } from "../app/app.repo.js";
+import { decryptApiKey } from "../../security/crypto.js";
 
 export type ResolvedPolicy = {
     model: string;
@@ -7,6 +8,7 @@ export type ResolvedPolicy = {
     temperature: number;
     allowTools: boolean;
     rateLimitPerMin: number;
+    openRouterApiKey?: string;
 };
 
 export class PolicyService {
@@ -18,12 +20,22 @@ export class PolicyService {
 
         if (!base && !app) return null;
 
+        let decryptedApiKey: string | undefined;
+        if (app?.openRouterApiKey) {
+            try {
+                decryptedApiKey = decryptApiKey(app.openRouterApiKey);
+            } catch (error) {
+                console.error("Failed to decrypt API key:", error);
+            }
+        }
+
         const merged: ResolvedPolicy = {
             model: base?.model ?? app?.policy?.model ?? "openai/gpt-4.1-mini",
             maxTokens: base?.maxTokens ?? app?.policy?.maxTokens ?? 1024,
             temperature: base?.temperature ?? app?.policy?.temperature ?? 0.2,
             allowTools: base?.allowTools ?? app?.policy?.allowTools ?? true,
             rateLimitPerMin: base?.rateLimitPerMin ?? app?.policy?.rateLimitPerMin ?? 60,
+            openRouterApiKey: decryptedApiKey,
         };
 
         return merged;

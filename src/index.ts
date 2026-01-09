@@ -5,20 +5,22 @@ import { ensureIndexes } from "./db/indexes.js";
 import { chatRoutes } from "./http/routes/chat.routes.js";
 import { cors } from "hono/cors";
 import { uiRoutes } from "./http/routes/ui.routes.js";
+import { authRoutes } from "./http/routes/auth.routes.js";
 
 const app = new Hono();
 
 app.use(
     "*",
     cors({
-        origin: "*", // або ["http://localhost:5173"]
+        origin: "*",
         allowMethods: ["GET", "POST", "OPTIONS", "DELETE"],
         allowHeaders: ["Content-Type", "X-AUTOUI-APP-ID", "X-AUTOUI-SECRET", "Authorization"],
         exposeHeaders: [],
-        credentials: false,
+        credentials: true,
     })
 );
 
+app.route("/auth", authRoutes);
 app.route("/ui", uiRoutes);
 app.route("/chat", chatRoutes);
 
