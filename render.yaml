@@ -17,8 +17,5 @@ services:
           - key: OPENROUTER_API_KEY
             sync: false
 
-          - key: AUTOUI_PROXY_SHARED_SECRET
-            sync: false
-
           - key: CORS_ORIGINS
             value: "*"

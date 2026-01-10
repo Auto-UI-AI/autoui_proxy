@@ -48,6 +48,8 @@ export class ChatController {
             ...body.messages,
         ];
 
+        console.log(policy);
+
         const llmResponse = await callOpenRouterStream({
             model: policy.model,
             maxTokens: policy.maxTokens,
@@ -56,7 +58,6 @@ export class ChatController {
             tools: [],
             apiKey: policy.openRouterApiKey,
         });
-
 
         return { status: 200, stream: llmResponse.body };
     }

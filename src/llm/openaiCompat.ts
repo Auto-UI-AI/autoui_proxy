@@ -21,10 +21,10 @@ export async function callOpenRouterStream(args: {
     temperature: number;
     messages: ChatMessage[];
     tools?: ToolSchema[];
-    apiKey?: string; 
+    apiKey?: string;
 }) {
     const baseUrl = process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-    const apiKey = args.apiKey || getEnv("OPENROUTER_API_KEY");
+    const apiKey = args.apiKey;
 
     const body: any = {
         model: args.model,

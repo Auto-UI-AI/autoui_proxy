@@ -1,12 +1,6 @@
 import type { Request } from "@hono/node-server/dist/request.js";
 
 export async function authAppAccess(req: Request, bodyAppId?: string) {
-    const secret = process.env.AUTOUI_PROXY_SHARED_SECRET;
-    if (!secret) {
-        console.warn("AUTOUI_PROXY_SHARED_SECRET is not set, skipping secret check!");
-        return { ok: true as const, tokenEntity: null };
-    }
-
     const gotSecret = req.headers.get("x-autoui-secret");
     const gotAppId = req.headers.get("x-autoui-app-id");
 
@@ -18,11 +12,6 @@ export async function authAppAccess(req: Request, bodyAppId?: string) {
     if (bodyAppId && bodyAppId !== gotAppId) {
         console.log("AppId mismatch", bodyAppId, gotAppId);
         return { ok: false as const, reason: "AppId mismatch" };
-    }
-
-    if (gotSecret !== secret) {
-        console.log("Secret mismatch", gotSecret, secret);
-        return { ok: false as const, reason: "Unauthorized" };
     }
 
     return { ok: true as const, tokenEntity: null };
